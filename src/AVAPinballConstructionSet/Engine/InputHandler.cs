@@ -9,20 +9,41 @@ namespace AVAPinballConstructionSet.Engine;
 public sealed class InputHandler : IDisposable
 {
     private readonly List<Key> _held = [];
+    private readonly Dictionary<PhysicalKey, Key> _pressedAs = [];
     private readonly ControllerManager _pad = new(0);
 
-    public void OnKeyDown(Key key)
+    /// <summary>
+    /// A key goes down. The key it was pressed as is kept against the physical key, because the release can be
+    /// named differently: with the keyboard option shift:both_capslock_cancel (Omarchy's default), letting go of a
+    /// Shift arrives as CapsLock, and a Shift that was never let go would hold its flipper up for good.
+    /// </summary>
+    public void OnKeyDown(Key key, PhysicalKey physical = PhysicalKey.None)
     {
+        if (physical != PhysicalKey.None)
+        {
+            if (_pressedAs.TryGetValue(physical, out var was) && was != key) _held.Remove(was);
+            _pressedAs[physical] = key;
+        }
         _held.Remove(key);
         _held.Add(key);
     }
 
-    public void OnKeyUp(Key key) => _held.Remove(key);
+    /// <summary>A key comes up: the key it was pressed as is let go too, whatever the release is called.</summary>
+    public void OnKeyUp(Key key, PhysicalKey physical = PhysicalKey.None)
+    {
+        _held.Remove(key);
+        if (physical != PhysicalKey.None && _pressedAs.Remove(physical, out var was)) _held.Remove(was);
+    }
+
     public bool Has(Key key) => _held.Contains(key);
     private bool Any(params Key[] keys) => keys.Any(_held.Contains);
 
     /// <summary>Let go of everything (the window lost the focus).</summary>
-    public void Clear() => _held.Clear();
+    public void Clear()
+    {
+        _held.Clear();
+        _pressedAs.Clear();
+    }
 
     public void Update() => _pad.Update();
 

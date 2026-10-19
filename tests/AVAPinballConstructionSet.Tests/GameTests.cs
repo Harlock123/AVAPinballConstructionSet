@@ -339,6 +339,24 @@ public class GameTests
     // ───────────────────────────── the keys ─────────────────────────────
 
     [Fact]
+    public void A_shift_let_go_as_caps_lock_drops_its_flipper()
+    {
+        // With shift:both_capslock_cancel, X11 names a Shift's release CapsLock; the physical key is still the Shift.
+        using var input = new InputHandler();
+        input.OnKeyDown(Key.LeftShift, PhysicalKey.ShiftLeft);
+        input.OnKeyDown(Key.RightShift, PhysicalKey.ShiftRight);
+        Assert.Equal(new Controls(Left: true, Right: true), input.Player);
+        input.OnKeyUp(Key.CapsLock, PhysicalKey.ShiftRight);
+        Assert.Equal(new Controls(Left: true), input.Player);
+        input.OnKeyUp(Key.CapsLock, PhysicalKey.ShiftLeft);
+        Assert.Equal(default, input.Player);
+        input.OnKeyDown(Key.Z, PhysicalKey.Z);
+        Assert.Equal(new Controls(Left: true), input.Player);
+        input.OnKeyUp(Key.Z, PhysicalKey.Z);
+        Assert.Equal(default, input.Player);
+    }
+
+    [Fact]
     public void The_keys()
     {
         using var input = new InputHandler();

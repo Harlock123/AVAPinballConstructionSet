@@ -173,7 +173,7 @@ public sealed partial class GameCanvas : Control
                 if (e.Key == Key.Escape) { g.OpenEditor(); return; }
                 break;
         }
-        Input.OnKeyDown(e.Key);
+        Input.OnKeyDown(e.Key, e.PhysicalKey);
     }
 
     /// <summary>The construction set's keys; true if the key was one of them.</summary>
@@ -236,7 +236,7 @@ public sealed partial class GameCanvas : Control
 
     protected override void OnKeyUp(KeyEventArgs e)
     {
-        Input.OnKeyUp(e.Key);
+        Input.OnKeyUp(e.Key, e.PhysicalKey);
         e.Handled = true;
     }
 
